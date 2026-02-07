@@ -141,25 +141,33 @@
   </div>
 
   <script>
-    const lines = Array.from(document.querySelectorAll(".line"));
-    const btn = document.getElementById("continueBtn");
+  const lines = Array.from(document.querySelectorAll(".line"));
+  const btn = document.getElementById("continueBtn");
 
-    const delays = [800, 2600, 4400, 6200];
+  const baseDelay = 3000; // 3 second delay before anything starts
 
-    lines.forEach((line, i) => {
-      setTimeout(() => {
-        line.classList.add("show");
-      }, delays[i]);
-    });
+  const delays = [
+    baseDelay + 800,
+    baseDelay + 2600,
+    baseDelay + 4400,
+    baseDelay + 6200
+  ];
 
+  lines.forEach((line, i) => {
     setTimeout(() => {
-      btn.classList.add("show");
-    }, 7800);
+      line.classList.add("show");
+    }, delays[i]);
+  });
 
-    btn.addEventListener("click", () => {
-      alert("Scene 2 next 🙂");
-    });
-  </script>
+  setTimeout(() => {
+    btn.classList.add("show");
+  }, baseDelay + 7800);
+
+  btn.addEventListener("click", () => {
+    alert("Scene 2 next 🙂");
+  });
+</script>
+
 
 </body>
 </html>
