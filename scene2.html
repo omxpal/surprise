@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scene 2 — Map</title>
+
+  <style>
+    :root{
+      --bg: #07080b;
+      --map: rgba(255,255,255,0.10);
+      --map2: rgba(255,255,255,0.07);
+      --glow: 0 0 18px rgba(255, 160, 200, 0.22);
+      --text: rgba(255,255,255,0.92);
+      --muted: rgba(255,255,255,0.72);
+      --heart: rgba(255, 105, 180, 0.95);
+      --line: rgba(255, 180, 220, 0.70);
+      --overlayTop: rgba(0,0,0,0.35);
+      --overlayBottom: rgba(0,0,0,0.70);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      height: 100vh;
+      overflow: hidden;
+      background: var(--bg);
+      color: var(--text);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    }
+
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(to bottom, var(--overlayTop), var(--overlayBottom));
+      pointer-events: none;
+    }
+
+    .scene {
+      height: 100vh;
+      width: 100vw;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .wrap {
+      width: min(980px, 92vw);
+      display: grid;
+      grid-template-rows: 1fr auto;
+      gap: 18px;
+    }
+
+    /* MAP AREA */
+    .map-card {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      border-radius: 18px;
+      overflow: hidden;
+      background:
+        radial-gradient(1200px 600px at 20% 30%, rgba(255,255,255,0.06), transparent 60%),
+        radial-gradient(900px 500px at 80% 70%, rgba(255,105,180,0.05), transparent 55%),
+        rgba(255,255,255,0.03);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.45);
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+
+    /* Minimal “map” SVG sits behind pins/lines */
+    .map-svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0.9;
+    }
+
+    /* Pins (hearts) */
+    .pin {
+      position: absolute;
+      transform: translate(-50%, -100%) scale(0.85);
+      opacity: 0;
+      transition: opacity 0.7s ease, transform 0.7s ease;
+      filter: drop-shadow(0 10px 18px rgba(0,0,0,0.35));
+      user-select: none;
+      pointer-events: none;
+    }
+
+    .pin.show {
+      opacity: 1;
+      transform: translate(-50%, -100%) scale(1);
+    }
+
+    .pin .heart {
+      font-size: clamp(22px, 3vw, 30px);
+      color: var(--heart);
+      text-shadow: var(--glow);
+      line-height: 1;
+    }
+
+    .pin .label {
+      margin-top: 6px;
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: 0.2px;
+      text-align: center;
+      white-space: nowrap;
+      opacity: 0.95;
+    }
+
+    /* Lines (SVG on top) */
+    .lines {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+
+    .route {
+      fill: none;
+      stroke: var(--line);
+      stroke-width: 2.2;
+      stroke-linecap: round;
+      stroke-dasharray: 2 10; /* dotted */
+      opacity: 0;
+    }
+
+    .route.show {
+      opacity: 1;
+      animation: draw 2.4s ease forwards;
+    }
+
+    @keyframes draw {
+      from { stroke-dashoffset: 160; }
+      to { stroke-dashoffset: 0; }
+    }
+
+    /* TEXT */
+    .text {
+      text-align: center;
+      text-shadow: var(--glow);
+      padding: 0 10px 6px;
+    }
+
+    .line {
+      opacity: 0;
+      transform: translateY(6px);
+      transition: opacity 1.0s ease, transform 1.0s ease;
+      font-weight: 300;
+      font-size: clamp(20px, 2.4vw, 30px);
+      margin: 8px 0;
+    }
+
+    .line.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Optional: tiny “hint” feel, very indie */
+    .subtle {
+      margin-top: 10px;
+      font-size: 12px;
+      color: rgba(255,255,255,0.35);
+      letter-spacing: 0.2px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="overlay"></div>
+
+  <div class="scene">
+    <div class="wrap">
+
+      <div class="map-card" id="mapCard">
+        <!-- Minimal stylized world map (indie blobs, not geographic-accurate) -->
+        <svg class="map-svg" viewBox="0 0 1000 560" preserveAspectRatio="none" aria-hidden="true">
+          <!-- “continents” as soft blobs -->
+          <path d="M80,160 C140,110 240,120 280,170 C320,210 300,280 240,300 C180,320 90,260 70,220 C60,195 65,175 80,160 Z"
+                fill="var(--map)" />
+          <path d="M300,120 C360,85 460,95 520,135 C575,170 560,245 505,265 C440,290 330,250 300,200 C280,165 280,135 300,120 Z"
+                fill="var(--map2)" />
+          <path d="M560,165 C620,120 740,125 820,180 C890,230 865,320 785,340 C690,365 585,305 555,245 C535,205 535,180 560,165 Z"
+                fill="var(--map)" />
+          <path d="M720,360 C770,330 850,345 890,395 C925,440 900,495 845,510 C785,525 725,475 705,430 C690,400 695,375 720,360 Z"
+                fill="var(--map2)" />
+          <!-- light grid vibe -->
+          <g opacity="0.08">
+            <path d="M0 140 H1000" stroke="#fff" stroke-width="1"/>
+            <path d="M0 280 H1000" stroke="#fff" stroke-width="1"/>
+            <path d="M0 420 H1000" stroke="#fff" stroke-width="1"/>
+            <path d="M200 0 V560" stroke="#fff" stroke-width="1"/>
+            <path d="M500 0 V560" stroke="#fff" stroke-width="1"/>
+            <path d="M800 0 V560" stroke="#fff" stroke-width="1"/>
+          </g>
+        </svg>
+
+        <!-- Lines drawn on top (coordinates are % of viewBox) -->
+        <svg class="lines" viewBox="0 0 1000 560" preserveAspectRatio="none" aria-hidden="true">
+          <!-- Thailand -> Melbourne -->
+          <path id="routeTH" class="route" d="M700,310 C760,330 820,360 860,430" />
+          <!-- Philippines -> Melbourne -->
+          <path id="routePH" class="route" d="M740,290 C800,320 845,360 860,430" />
+        </svg>
+
+        <!-- PINS (positioned in % relative to card) -->
+        <!-- Thailand -->
+        <div class="pin" id="pinTH" style="left: 70%; top: 56%;">
+          <div class="heart">❤</div>
+          <div class="label">Thailand</div>
+        </div>
+
+        <!-- Philippines -->
+        <div class="pin" id="pinPH" style="left: 74%; top: 52%;">
+          <div class="heart">❤</div>
+          <div class="label">Philippines</div>
+        </div>
+
+        <!-- Australia / Melbourne -->
+        <div class="pin" id="pinAU" style="left: 86%; top: 78%;">
+          <div class="heart">❤</div>
+          <div class="label">Australia</div>
+        </div>
+      </div>
+
+      <div class="text" id="scene2Text">
+        <div class="line">You were in the Philippines.</div>
+        <div class="line">I was in Thailand.</div>
+        <div class="line">And somehow…</div>
+        <div class="line">We met each other in Melbourne</div>
+        <div class="subtle">(we were really out here)</div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    // Timeline: ~10–12s
+    const base = 700; // slight initial pause
+
+    const pinTH = document.getElementById("pinTH");
+    const pinPH = document.getElementById("pinPH");
+    const pinAU = document.getElementById("pinAU");
+
+    const routeTH = document.getElementById("routeTH");
+    const routePH = document.getElementById("routePH");
+
+    const textLines = Array.from(document.querySelectorAll("#scene2Text .line"));
+
+    // Pins appear one by one
+    setTimeout(() => pinTH.classList.add("show"), base + 400);
+    setTimeout(() => pinPH.classList.add("show"), base + 1400);
+    setTimeout(() => pinAU.classList.add("show"), base + 2400);
+
+    // Dotted routes animate after pins
+    setTimeout(() => routeTH.classList.add("show"), base + 3200);
+    setTimeout(() => routePH.classList.add("show"), base + 3600);
+
+    // Text sequence (line by line)
+    const textBase = base + 4200;
+    const textDelays = [0, 1600, 3200, 4800];
+
+    textLines.forEach((el, i) => {
+      setTimeout(() => el.classList.add("show"), textBase + textDelays[i]);
+    });
+
+    // Optional: auto-advance later (when you create scene3.html)
+    // setTimeout(() => { window.location.href = "scene3.html"; }, 12000);
+  </script>
+</body>
+</html>
