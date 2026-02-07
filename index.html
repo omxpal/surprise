@@ -14,7 +14,9 @@
       --btn-bg-hover: rgba(255, 255, 255, 0.32);
     }
 
-    * { box-sizing: border-box; }
+    * {
+      box-sizing: border-box;
+    }
 
     body {
       margin: 0;
@@ -25,10 +27,13 @@
       font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
     }
 
-    /* Background video layer */
+    /* FULLSCREEN BACKGROUND VIDEO */
     .background {
       position: fixed;
-      inset: 0;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
       z-index: -2;
       overflow: hidden;
       background: #000;
@@ -39,25 +44,31 @@
       height: 100%;
       object-fit: cover;
       display: block;
-      transform: scale(1.02);
     }
 
-    /* Readability overlay */
+    /* DARK GRADIENT OVERLAY */
     .overlay {
       position: fixed;
-      inset: 0;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
       z-index: -1;
-      background: linear-gradient(to bottom, var(--overlay-top), var(--overlay-bottom));
+      background: linear-gradient(
+        to bottom,
+        var(--overlay-top),
+        var(--overlay-bottom)
+      );
     }
 
-    /* Scene container */
+    /* CENTERED SCENE CONTENT */
     .scene {
       height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 24px;
       text-align: center;
+      padding: 24px;
     }
 
     .text {
@@ -107,15 +118,19 @@
 </head>
 
 <body>
+
+  <!-- BACKGROUND VIDEO -->
   <div class="background">
     <video autoplay loop muted playsinline>
-      <!-- Put your real mp4 here (same folder: stars.mp4, or a full URL) -->
-      <source src="stars-video.mp4" type="video/mp4" />
+      <source src="857251-hd_1620_1080_25fps.mp4" type="video/mp4" />
     </video>
   </div>
+
+  <!-- OVERLAY FOR READABILITY -->
   <div class="overlay"></div>
 
-  <div class="scene" id="scene1">
+  <!-- SCENE 1 -->
+  <div class="scene">
     <div class="text" id="scene1Text">
       <div class="line">In a universe this big…</div>
       <div class="line">it still feels impossible that I found you.</div>
@@ -126,21 +141,25 @@
   </div>
 
   <script>
-    // Simple staggered reveal (8–10s total)
-    const lines = Array.from(document.querySelectorAll("#scene1Text .line"));
+    const lines = Array.from(document.querySelectorAll(".line"));
     const btn = document.getElementById("continueBtn");
 
-    const delaysMs = [800, 2600, 4400, 6200];
-    lines.forEach((el, i) => {
-      setTimeout(() => el.classList.add("show"), delaysMs[i] ?? (800 + i * 1800));
+    const delays = [800, 2600, 4400, 6200];
+
+    lines.forEach((line, i) => {
+      setTimeout(() => {
+        line.classList.add("show");
+      }, delays[i]);
     });
 
-    setTimeout(() => btn.classList.add("show"), 7800);
+    setTimeout(() => {
+      btn.classList.add("show");
+    }, 7800);
 
     btn.addEventListener("click", () => {
-      // placeholder: later we’ll switch to Scene 2
       alert("Scene 2 next 🙂");
     });
   </script>
+
 </body>
 </html>
