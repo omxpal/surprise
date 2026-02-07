@@ -9,19 +9,17 @@
     :root{
       --bg: #07080b;
       --card: rgba(255,255,255,0.03);
-      --border: rgba(255,255,255,0.06);
-      --mapA: rgba(255,255,255,0.12);
-      --mapB: rgba(255,255,255,0.08);
+      --border: rgba(255,255,255,0.08);
 
       --text: rgba(255,255,255,0.92);
       --muted: rgba(255,255,255,0.72);
 
       --heart: rgba(255, 105, 180, 0.95);
-      --line: rgba(255, 190, 225, 0.75);
+      --line: rgba(255, 190, 225, 0.80);
 
       --glow: 0 0 18px rgba(255, 160, 200, 0.22);
-      --overlayTop: rgba(0,0,0,0.35);
-      --overlayBottom: rgba(0,0,0,0.70);
+      --overlayTop: rgba(0,0,0,0.30);
+      --overlayBottom: rgba(0,0,0,0.65);
 
       --btn-bg: rgba(255, 255, 255, 0.18);
       --btn-bg-hover: rgba(255, 255, 255, 0.28);
@@ -55,7 +53,7 @@
     }
 
     .wrap{
-      width: min(980px, 92vw);
+      width: min(1020px, 94vw);
       display: grid;
       grid-template-rows: 1fr auto auto;
       gap: 16px;
@@ -67,22 +65,35 @@
       aspect-ratio: 16 / 9;
       border-radius: 18px;
       overflow: hidden;
-      background:
-        radial-gradient(1200px 600px at 20% 30%, rgba(255,255,255,0.06), transparent 60%),
-        radial-gradient(900px 500px at 80% 70%, rgba(255,105,180,0.05), transparent 55%),
-        var(--card);
+      background: var(--card);
       border: 1px solid var(--border);
       box-shadow: 0 12px 40px rgba(0,0,0,0.45);
     }
 
-    .map-svg{
+    /* Your map image */
+    .map-image{
       position: absolute;
       inset: 0;
       width: 100%;
       height: 100%;
-      opacity: 0.95;
+      object-fit: contain;          /* show the whole map */
+      object-position: center;
+      background: rgba(0,0,0,0.25); /* fills empty bars if any */
+      display: block;
+      filter: contrast(1.02);
     }
 
+    /* A light dark wash on top to keep indie mood + readable pins */
+    .map-wash{
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(900px 500px at 30% 25%, rgba(255,255,255,0.05), transparent 55%),
+                  radial-gradient(900px 500px at 80% 70%, rgba(255,105,180,0.04), transparent 60%),
+                  rgba(0,0,0,0.15);
+      pointer-events: none;
+    }
+
+    /* Route layer */
     .lines{
       position: absolute;
       inset: 0;
@@ -94,10 +105,11 @@
     .route{
       fill: none;
       stroke: var(--line);
-      stroke-width: 2.2;
+      stroke-width: 2.4;
       stroke-linecap: round;
       stroke-dasharray: 2 10;   /* dotted */
       opacity: 0;
+      filter: drop-shadow(0 0 10px rgba(255, 160, 200, 0.18));
     }
 
     .route.show{
@@ -106,10 +118,11 @@
     }
 
     @keyframes draw{
-      from { stroke-dashoffset: 160; }
+      from { stroke-dashoffset: 170; }
       to   { stroke-dashoffset: 0; }
     }
 
+    /* Pins */
     .pin{
       position: absolute;
       transform: translate(-50%, -100%) scale(0.85);
@@ -142,6 +155,7 @@
       opacity: 0.95;
     }
 
+    /* Text */
     .text{
       text-align: center;
       text-shadow: var(--glow);
@@ -186,14 +200,6 @@
     .continue:hover{
       background: var(--btn-bg-hover);
     }
-
-    .tiny{
-      text-align: center;
-      font-size: 12px;
-      color: rgba(255,255,255,0.35);
-      letter-spacing: 0.2px;
-      margin-top: -6px;
-    }
   </style>
 </head>
 
@@ -203,55 +209,21 @@
   <div class="scene">
     <div class="wrap">
 
-      <div class="map-card" id="mapCard">
+      <div class="map-card">
+        <!-- MAP IMAGE (from repo root) -->
+        <img class="map-image" src="sl_070722_51460_20.jpg" alt="World map" />
+        <div class="map-wash"></div>
 
-        <!-- Recognizable simplified world map silhouette (dark minimal) -->
-        <svg class="map-svg" viewBox="0 0 1000 560" preserveAspectRatio="none" aria-hidden="true">
-          <g opacity="0.9">
-            <!-- North America -->
-            <path d="M108 170c35-34 88-48 135-44 50 4 94 26 126 58 18 18 22 38 10 60-15 28-50 45-85 52-46 9-99 5-141-13-32-14-62-40-67-68-3-15 5-31 22-45z"
-                  fill="var(--mapA)"/>
-            <!-- Greenland-ish hint -->
-            <path d="M250 110c20-14 52-10 66 8 10 14 2 30-14 40-18 10-48 6-60-10-10-14-4-28 8-38z"
-                  fill="var(--mapB)"/>
-            <!-- South America -->
-            <path d="M300 320c18-10 40 2 50 20 10 18 6 40-2 58-10 22-24 42-24 68 0 18 12 36 0 48-14 14-42-3-52-22-14-26-10-58 2-86 10-24 8-58 26-86z"
-                  fill="var(--mapB)"/>
-            <!-- Europe -->
-            <path d="M475 175c20-18 54-20 78-10 20 8 34 24 30 38-6 20-42 28-70 28-22 0-58-6-60-26-1-8 8-20 22-30z"
-                  fill="var(--mapB)"/>
-            <!-- Africa -->
-            <path d="M500 230c26-18 68-18 94 4 24 20 28 52 18 80-10 30-28 58-22 90 4 18 14 34 2 46-16 16-50 2-66-18-22-28-30-70-20-106 10-34-10-60-6-96z"
-                  fill="var(--mapA)"/>
-            <!-- Asia -->
-            <path d="M560 160c48-30 122-34 178-14 54 18 98 60 110 100 8 28-6 52-34 66-36 18-84 14-124 6-50-10-120-34-152-68-20-22-26-56 22-90z"
-                  fill="var(--mapA)"/>
-            <!-- Australia -->
-            <path d="M770 365c30-18 78-14 104 10 22 20 22 52 0 70-26 22-74 22-108 2-24-14-34-44-16-64 6-8 12-12 20-18z"
-                  fill="var(--mapB)"/>
-          </g>
-
-          <!-- subtle grid vibe -->
-          <g opacity="0.09">
-            <path d="M0 140 H1000" stroke="#fff" stroke-width="1"/>
-            <path d="M0 280 H1000" stroke="#fff" stroke-width="1"/>
-            <path d="M0 420 H1000" stroke="#fff" stroke-width="1"/>
-            <path d="M200 0 V560" stroke="#fff" stroke-width="1"/>
-            <path d="M500 0 V560" stroke="#fff" stroke-width="1"/>
-            <path d="M800 0 V560" stroke="#fff" stroke-width="1"/>
-          </g>
-        </svg>
-
-        <!-- Dotted routes (SVG coordinates match viewBox) -->
+        <!-- DOTTED ROUTES (we use a 1000x560 viewBox as a stable coordinate system) -->
         <svg class="lines" viewBox="0 0 1000 560" preserveAspectRatio="none" aria-hidden="true">
           <!-- Thailand -> Melbourne -->
-          <path id="routeTH" class="route" d="M720,320 C780,340 820,380 840,450" />
+          <path id="routeTH" class="route" d="M720,320 C780,345 820,390 845,455" />
           <!-- Philippines -> Melbourne -->
-          <path id="routePH" class="route" d="M760,300 C810,330 835,380 840,450" />
+          <path id="routePH" class="route" d="M760,295 C810,330 835,385 845,455" />
         </svg>
 
-        <!-- Pins positioned in % (tweak later if you want more accuracy) -->
-        <div class="pin" id="pinTH" style="left: 72%; top: 57%;">
+        <!-- PINS (positioned as % of the card) -->
+        <div class="pin" id="pinTH" style="left: 72%; top: 58%;">
           <div class="heart">❤</div>
           <div class="label">Thailand</div>
         </div>
@@ -261,11 +233,10 @@
           <div class="label">Philippines</div>
         </div>
 
-        <div class="pin" id="pinAU" style="left: 84%; top: 80%;">
+        <div class="pin" id="pinAU" style="left: 84.5%; top: 82%;">
           <div class="heart">❤</div>
           <div class="label">Australia</div>
         </div>
-
       </div>
 
       <div class="text" id="scene2Text">
@@ -275,16 +246,13 @@
         <div class="line">We met each other in Melbourne</div>
       </div>
 
-      <div class="tiny">(we were really out here)</div>
-
-      <!-- If you want to go to Scene 3, change the filename below -->
       <button class="continue" id="continueBtn">Continue</button>
 
     </div>
   </div>
 
   <script>
-    // Total feel: ~10–12s
+    // Timing: ~10–12s
     const base = 600;
 
     const pinTH = document.getElementById("pinTH");
@@ -297,16 +265,16 @@
     const textLines = Array.from(document.querySelectorAll("#scene2Text .line"));
     const btn = document.getElementById("continueBtn");
 
-    // Pins
+    // Pins appear one-by-one
     setTimeout(() => pinTH.classList.add("show"), base + 400);
     setTimeout(() => pinPH.classList.add("show"), base + 1400);
     setTimeout(() => pinAU.classList.add("show"), base + 2400);
 
-    // Routes
+    // Routes animate
     setTimeout(() => routeTH.classList.add("show"), base + 3200);
     setTimeout(() => routePH.classList.add("show"), base + 3600);
 
-    // Text
+    // Text sequence
     const textBase = base + 4300;
     const textDelays = [0, 1600, 3200, 4800];
 
@@ -317,8 +285,8 @@
     // Button appears near the end
     setTimeout(() => btn.classList.add("show"), textBase + 6200);
 
+    // Next page (change to your real filename when ready)
     btn.addEventListener("click", () => {
-      // Change this to your next file when ready, e.g. "scene3.html"
       window.location.href = "scene3.html";
     });
   </script>
