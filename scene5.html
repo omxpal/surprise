@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scene 5 — Valentine?</title>
+
+  <style>
+    :root{
+      --bg1:#060715;
+      --bg2:#120a22;
+      --bg3:#2a0f2e;
+
+      --card: rgba(255,255,255,0.06);
+      --border: rgba(255,255,255,0.10);
+
+      --text: rgba(255,255,255,0.92);
+      --muted: rgba(255,255,255,0.72);
+
+      --pink: rgba(255,105,180,0.95);
+      --pink2: rgba(255,160,210,0.95);
+      --glow: 0 0 18px rgba(255,160,200,0.18);
+
+      --btn-bg: rgba(255,255,255,0.14);
+      --btn-bg-hover: rgba(255,255,255,0.24);
+
+      --yes-bg: rgba(255,105,180,0.25);
+      --yes-bg-hover: rgba(255,105,180,0.35);
+
+      --no-bg: rgba(255,255,255,0.10);
+      --no-bg-hover: rgba(255,255,255,0.18);
+    }
+
+    *{ box-sizing: border-box; }
+
+    body{
+      margin:0;
+      height:100vh;
+      overflow:hidden;
+      background:
+        radial-gradient(1200px 800px at 20% 25%, rgba(255,255,255,0.06), transparent 60%),
+        radial-gradient(900px 650px at 75% 70%, rgba(255,105,180,0.08), transparent 60%),
+        linear-gradient(180deg, var(--bg1), var(--bg2) 55%, var(--bg3));
+      color: var(--text);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding: 22px;
+    }
+
+    .vignette{
+      position: fixed;
+      inset: 0;
+      pointer-events:none;
+      background: radial-gradient(closest-side, transparent 55%, rgba(0,0,0,0.55));
+    }
+
+    .card{
+      position: relative;
+      width: min(720px, 92vw);
+      border-radius: 22px;
+      border: 1px solid var(--border);
+      background: var(--card);
+      box-shadow: 0 18px 55px rgba(0,0,0,0.45);
+      padding: 34px 26px 30px;
+      text-align: center;
+      overflow: hidden;
+    }
+
+    .top{
+      font-size: clamp(16px, 2.0vw, 18px);
+      color: var(--muted);
+      letter-spacing: 0.2px;
+      margin-bottom: 10px;
+      text-shadow: var(--glow);
+    }
+
+    .big{
+      font-size: clamp(34px, 4.2vw, 54px);
+      font-weight: 600;
+      margin: 10px 0 18px;
+      text-shadow: var(--glow);
+      line-height: 1.08;
+    }
+
+    .big .pink{
+      color: var(--pink);
+      font-weight: 700;
+    }
+
+    .btn-row{
+      position: relative;
+      display:flex;
+      gap: 14px;
+      justify-content:center;
+      align-items:center;
+      margin-top: 6px;
+      padding: 12px 10px 2px;
+      min-height: 74px; /* room for NO movement */
+    }
+
+    button{
+      border: 0;
+      border-radius: 12px;
+      padding: 12px 16px;
+      cursor: pointer;
+      color: #fff;
+      font-size: 15px;
+      letter-spacing: 0.2px;
+      transition: transform .15s ease, background .2s ease, opacity .2s ease;
+      user-select: none;
+    }
+
+    #yesBtn{
+      background: var(--yes-bg);
+      border: 1px solid rgba(255,105,180,0.35);
+      box-shadow: 0 10px 30px rgba(255,105,180,0.08);
+    }
+
+    #yesBtn:hover{
+      background: var(--yes-bg-hover);
+      transform: translateY(-1px);
+    }
+
+    /* NO button is absolute so it can dodge independently */
+    #noBtn{
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(calc(-50% + 120px), -50%);
+      background: var(--no-bg);
+      border: 1px solid rgba(255,255,255,0.16);
+    }
+
+    #noBtn:hover{
+      background: var(--no-bg-hover);
+    }
+
+    /* Hearts around edges */
+    .edge-heart{
+      position: absolute;
+      opacity: 0.18;
+      filter: drop-shadow(0 10px 18px rgba(0,0,0,0.35));
+      text-shadow: var(--glow);
+      color: var(--pink2);
+      animation: floaty 7s ease-in-out infinite;
+      pointer-events:none;
+      user-select:none;
+    }
+
+    @keyframes floaty{
+      0%   { transform: translateY(0) rotate(0deg); }
+      50%  { transform: translateY(-12px) rotate(4deg); }
+      100% { transform: translateY(0) rotate(0deg); }
+    }
+
+    .h1{ left: 16px; top: 14px; font-size: 22px; animation-delay: .2s; }
+    .h2{ right: 18px; top: 18px; font-size: 18px; animation-delay: .8s; }
+    .h3{ left: 22px; bottom: 18px; font-size: 18px; animation-delay: 1.2s; }
+    .h4{ right: 16px; bottom: 14px; font-size: 22px; animation-delay: .4s; }
+    .h5{ left: 50%; top: -6px; transform: translateX(-50%); font-size: 16px; animation-delay: 1.6s; }
+    .h6{ left: 50%; bottom: -6px; transform: translateX(-50%); font-size: 16px; animation-delay: .6s; }
+
+    /* Tiny message */
+    .hint{
+      margin-top: 12px;
+      font-size: 12px;
+      color: rgba(255,255,255,0.42);
+      letter-spacing: 0.2px;
+    }
+
+    /* Success overlay */
+    .success{
+      position: fixed;
+      inset: 0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background: rgba(0,0,0,0.55);
+      backdrop-filter: blur(6px);
+      opacity: 0;
+      pointer-events:none;
+      transition: opacity .35s ease;
+    }
+
+    .success.show{
+      opacity: 1;
+      pointer-events:auto;
+    }
+
+    .success-card{
+      width: min(560px, 90vw);
+      border-radius: 20px;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(255,255,255,0.07);
+      box-shadow: 0 18px 60px rgba(0,0,0,0.55);
+      padding: 26px 22px;
+      text-align:center;
+    }
+
+    .success-title{
+      font-size: clamp(26px, 3.6vw, 40px);
+      font-weight: 700;
+      margin: 4px 0 8px;
+      text-shadow: var(--glow);
+    }
+
+    .success-sub{
+      color: rgba(255,255,255,0.78);
+      font-weight: 300;
+      margin: 0 0 14px;
+      font-size: 16px;
+    }
+
+    .next{
+      margin-top: 8px;
+      background: var(--btn-bg);
+      border: 1px solid rgba(255,255,255,0.14);
+    }
+
+    .next:hover{
+      background: var(--btn-bg-hover);
+      transform: translateY(-1px);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="vignette"></div>
+
+  <div class="card" id="card">
+    <div class="edge-heart h1">❤</div>
+    <div class="edge-heart h2">❤</div>
+    <div class="edge-heart h3">❤</div>
+    <div class="edge-heart h4">❤</div>
+    <div class="edge-heart h5">❤</div>
+    <div class="edge-heart h6">❤</div>
+
+    <div class="top">What I'm trying to say is...</div>
+    <div class="big">Will you be my <span class="pink">Valentine</span>?</div>
+
+    <div class="btn-row" id="btnRow">
+      <button id="yesBtn">YES 💘</button>
+      <button id="noBtn">NO</button>
+    </div>
+
+    <div class="hint" id="hint">be honest 😇</div>
+  </div>
+
+  <!-- success modal -->
+  <div class="success" id="success">
+    <div class="success-card">
+      <div class="success-title">YAY 💘</div>
+      <div class="success-sub">ok you’re stuck with me now</div>
+      <button class="next" id="nextBtn">Continue</button>
+    </div>
+  </div>
+
+  <script>
+    // NO button behavior: A) Moves away when hovered
+    const noBtn = document.getElementById("noBtn");
+    const yesBtn = document.getElementById("yesBtn");
+    const row = document.getElementById("btnRow");
+    const hint = document.getElementById("hint");
+
+    const success = document.getElementById("success");
+    const nextBtn = document.getElementById("nextBtn");
+
+    // You can tweak these if you want it easier/harder to catch:
+    const PADDING = 10;         // keep away from edges
+    const MIN_DIST = 120;       // keep some space from YES
+
+    function rand(min, max){ return Math.random() * (max - min) + min; }
+
+    function moveNoButton() {
+      const rect = row.getBoundingClientRect();
+      const yesRect = yesBtn.getBoundingClientRect();
+
+      // row-local coordinates
+      const maxX = rect.width - noBtn.offsetWidth - PADDING;
+      const maxY = rect.height - noBtn.offsetHeight - PADDING;
+
+      let x, y, tries = 0;
+
+      do {
+        x = rand(PADDING, Math.max(PADDING, maxX));
+        y = rand(PADDING, Math.max(PADDING, maxY));
+        tries++;
+
+        // approximate distance from YES center to NO center
+        const yesCx = (yesRect.left - rect.left) + yesRect.width / 2;
+        const yesCy = (yesRect.top - rect.top) + yesRect.height / 2;
+
+        const noCx = x + noBtn.offsetWidth / 2;
+        const noCy = y + noBtn.offsetHeight / 2;
+
+        var dist = Math.hypot(noCx - yesCx, noCy - yesCy);
+      } while (dist < MIN_DIST && tries < 25);
+
+      noBtn.style.left = x + "px";
+      noBtn.style.top = y + "px";
+      noBtn.style.transform = "translate(0, 0)";
+    }
+
+    // initial set (after layout)
+    setTimeout(() => moveNoButton(), 80);
+
+    // dodge on hover + on touchstart (mobile)
+    noBtn.addEventListener("mouseenter", () => {
+      moveNoButton();
+      hint.textContent = "nahhh 😤";
+    });
+
+    noBtn.addEventListener("touchstart", (e) => {
+      e.preventDefault();
+      moveNoButton();
+      hint.textContent = "not that one 😤";
+    }, { passive: false });
+
+    // YES works
+    yesBtn.addEventListener("click", () => {
+      success.classList.add("show");
+    });
+
+    // Continue after YES (change to your next scene/page)
+    nextBtn.addEventListener("click", () => {
+      window.location.href = "scene6.html"; // change when ready
+    });
+  </script>
+</body>
+</html>
