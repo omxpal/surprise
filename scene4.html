@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scene 4 — Thank You</title>
+
+  <style>
+    :root{
+      --bg1: #060715;
+      --bg2: #120a22;
+      --bg3: #2a0f2e;
+
+      --text: rgba(255,255,255,0.92);
+      --muted: rgba(255,255,255,0.72);
+
+      --glow: 0 0 18px rgba(255,160,200,0.18);
+      --pink: rgba(255,105,180,0.95);
+      --spark: rgba(255, 225, 245, 0.9);
+
+      --btn-bg: rgba(255,255,255,0.16);
+      --btn-bg-hover: rgba(255,255,255,0.26);
+    }
+
+    *{ box-sizing: border-box; }
+
+    body{
+      margin:0;
+      height:100vh;
+      overflow:hidden;
+      background:#000;
+      color:var(--text);
+      font-family:system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    }
+
+    /* Calm, starry-ish gradient background */
+    .bg{
+      position: fixed;
+      inset: 0;
+      z-index: -3;
+      background:
+        radial-gradient(1200px 800px at 20% 25%, rgba(255,255,255,0.06), transparent 60%),
+        radial-gradient(900px 650px at 75% 70%, rgba(255,105,180,0.07), transparent 60%),
+        linear-gradient(180deg, var(--bg1), var(--bg2) 55%, var(--bg3));
+    }
+
+    /* Subtle star speckles (pure CSS) */
+    .stars{
+      position: fixed;
+      inset: 0;
+      z-index: -2;
+      opacity: 0.35;
+      background-image:
+        radial-gradient(1px 1px at 12% 18%, rgba(255,255,255,0.9), transparent 60%),
+        radial-gradient(1px 1px at 28% 42%, rgba(255,255,255,0.7), transparent 60%),
+        radial-gradient(1px 1px at 44% 24%, rgba(255,255,255,0.8), transparent 60%),
+        radial-gradient(1px 1px at 63% 38%, rgba(255,255,255,0.6), transparent 60%),
+        radial-gradient(1px 1px at 78% 20%, rgba(255,255,255,0.9), transparent 60%),
+        radial-gradient(1px 1px at 86% 52%, rgba(255,255,255,0.7), transparent 60%),
+        radial-gradient(1px 1px at 17% 70%, rgba(255,255,255,0.6), transparent 60%),
+        radial-gradient(1px 1px at 52% 76%, rgba(255,255,255,0.75), transparent 60%),
+        radial-gradient(1px 1px at 90% 78%, rgba(255,255,255,0.6), transparent 60%);
+      filter: blur(0.2px);
+    }
+
+    /* Soft vignette for focus */
+    .vignette{
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      background: radial-gradient(closest-side, transparent 50%, rgba(0,0,0,0.55));
+      pointer-events: none;
+    }
+
+    .scene{
+      height: 100vh;
+      width: 100vw;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding: 26px;
+      text-align:center;
+    }
+
+    .wrap{
+      width: min(860px, 92vw);
+      text-shadow: var(--glow);
+    }
+
+    .line{
+      opacity: 0;
+      transform: translateY(6px);
+      transition: opacity 1.0s ease, transform 1.0s ease;
+      font-weight: 300;
+      font-size: clamp(22px, 2.7vw, 34px);
+      margin: 14px 0;
+    }
+
+    .line.show{
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .home{
+      font-weight: 400;
+      color: rgba(255,255,255,0.98);
+    }
+
+    .pink{
+      color: var(--pink);
+      font-weight: 400;
+    }
+
+    /* Floating icons */
+    .float-layer{
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    .icon{
+      position: absolute;
+      opacity: 0.0;
+      transform: translateY(14px) scale(0.95);
+      filter: drop-shadow(0 10px 18px rgba(0,0,0,0.35));
+      animation:
+        fadeUp 1.2s ease forwards,
+        drift 7.5s ease-in-out infinite;
+      text-shadow: var(--glow);
+      font-size: 18px;
+    }
+
+    /* each icon has its own delay + drift duration */
+    .icon.i1{ left: 18%; top: 70%; animation-delay: 0.8s, 0.8s;  font-size: 18px; }
+    .icon.i2{ left: 30%; top: 25%; animation-delay: 1.4s, 1.4s;  font-size: 16px; }
+    .icon.i3{ left: 58%; top: 80%; animation-delay: 1.0s, 1.0s;  font-size: 20px; }
+    .icon.i4{ left: 72%; top: 32%; animation-delay: 1.8s, 1.8s;  font-size: 16px; }
+    .icon.i5{ left: 84%; top: 62%; animation-delay: 2.2s, 2.2s;  font-size: 18px; }
+
+    @keyframes fadeUp{
+      to{
+        opacity: 0.95;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    @keyframes drift{
+      0%   { transform: translateY(0) translateX(0) scale(1); }
+      50%  { transform: translateY(-18px) translateX(10px) scale(1.02); }
+      100% { transform: translateY(0) translateX(0) scale(1); }
+    }
+
+    .heart { color: var(--pink); }
+    .spark { color: var(--spark); }
+    .star  { color: rgba(255,255,255,0.9); }
+
+    .continue{
+      margin-top: 22px;
+      padding: 10px 18px;
+      border: 0;
+      border-radius: 10px;
+      cursor: pointer;
+      background: var(--btn-bg);
+      color: #fff;
+      font-size: 14px;
+      letter-spacing: 0.2px;
+      opacity: 0;
+      transform: translateY(6px);
+      transition: opacity .8s ease, transform .8s ease, background .2s ease;
+    }
+
+    .continue.show{
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .continue:hover{
+      background: var(--btn-bg-hover);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="bg"></div>
+  <div class="stars"></div>
+  <div class="vignette"></div>
+
+  <!-- floating icons -->
+  <div class="float-layer" aria-hidden="true">
+    <div class="icon i1 heart">❤</div>
+    <div class="icon i2 star">✦</div>
+    <div class="icon i3 spark">✧</div>
+    <div class="icon i4 heart">❤</div>
+    <div class="icon i5 star">✦</div>
+  </div>
+
+  <div class="scene">
+    <div class="wrap" id="scene4Text">
+      <div class="line">Thank you for choosing me—</div>
+      <div class="line">for your patience, your softness,</div>
+      <div class="line">and the way you make ordinary days feel warm.</div>
+      <div class="line home">You feel like <span class="pink">home</span>.</div>
+
+      <button class="continue" id="continueBtn">Continue</button>
+    </div>
+  </div>
+
+  <script>
+    const lines = Array.from(document.querySelectorAll("#scene4Text .line"));
+    const btn = document.getElementById("continueBtn");
+
+    // 8–10s pacing (gentle)
+    const base = 900;
+    const delays = [0, 1800, 3600, 5400];
+
+    lines.forEach((el, i) => {
+      setTimeout(() => el.classList.add("show"), base + delays[i]);
+    });
+
+    // Button near the end
+    setTimeout(() => btn.classList.add("show"), base + 7000);
+
+    btn.addEventListener("click", () => {
+      window.location.href = "scene5.html"; // change when you create it
+    });
+  </script>
+</body>
+</html>
