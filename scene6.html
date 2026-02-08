@@ -38,6 +38,16 @@ body{
   padding:22px;
 }
 
+/* FIREWORKS CANVAS (BEHIND EVERYTHING) */
+#fireworks{
+  position:fixed;
+  inset:0;
+  width:100%;
+  height:100%;
+  z-index:0;
+  pointer-events:none;
+}
+
 /* STAGE */
 .wrap{
   width: min(900px, 94vw);
@@ -45,6 +55,7 @@ body{
   position: relative;
   display: grid;
   place-items: center;
+  z-index:2; /* above fireworks */
 }
 
 /* OVERLAY LAYERS */
@@ -85,7 +96,7 @@ body{
   display:grid;
   gap:12px;
   place-items:center;
-  pointer-events:auto;
+  pointer-events:auto; /* allow video controls */
 }
 
 .video-card{
@@ -131,6 +142,9 @@ video{
 
 <body>
 
+<!-- Fireworks layer -->
+<canvas id="fireworks"></canvas>
+
 <div class="wrap">
 
   <!-- Message 1 -->
@@ -156,6 +170,9 @@ video{
 </div>
 
 <script>
+/* -------------------------
+   SCENE TIMELINE (YOUR FLOW)
+-------------------------- */
 const msg1 = document.getElementById("msg1");
 const msg2 = document.getElementById("msg2");
 const videoCard = document.getElementById("videoCard");
@@ -168,24 +185,215 @@ Timeline:
 2.5s → msg1 fades
 3.5s → msg2 appears
 5.5s → msg2 fades
-6.5s → video + caption appear
+6.5s → video + caption appear + fireworks start
 */
 
 setTimeout(() => msg1.classList.add("show"), 500);
-
 setTimeout(() => msg1.classList.add("fade"), 2500);
-setTimeout(() => msg1.classList.add("hidden"), 3500);
+setTimeout(() => msg1.classList.add("hidden"), 3600);
 
 setTimeout(() => msg2.classList.add("show"), 3500);
-
 setTimeout(() => msg2.classList.add("fade"), 5500);
-setTimeout(() => msg2.classList.add("hidden"), 6500);
+setTimeout(() => msg2.classList.add("hidden"), 6600);
 
 setTimeout(() => {
   videoCard.classList.add("show");
   caption.classList.add("show");
   vid.play().catch(()=>{});
+  startFireworks(9000); // fireworks run for 9s (feel free to tweak)
 }, 6500);
+</script>
+
+<script>
+/* -------------------------
+   FIREWORKS (CANVAS)
+   Romantic + subtle bursts
+-------------------------- */
+
+const canvas = document.getElementById("fireworks");
+const ctx = canvas.getContext("2d", { alpha: true });
+
+let W = 0, H = 0;
+let dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+let particles = [];
+let sparks = [];
+let running = false;
+let stopAt = 0;
+
+// Soft romantic palette
+const palette = [
+  "rgba(255,105,180,0.95)", // hot pink
+  "rgba(255,170,220,0.90)", // soft pink
+  "rgba(190,140,255,0.85)", // lavender
+  "rgba(255,255,255,0.85)"  // white glow
+];
+
+function resize(){
+  W = window.innerWidth;
+  H = window.innerHeight;
+  dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+  canvas.width = Math.floor(W * dpr);
+  canvas.height = Math.floor(H * dpr);
+  canvas.style.width = W + "px";
+  canvas.style.height = H + "px";
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+window.addEventListener("resize", resize);
+resize();
+
+function rand(min, max){ return Math.random() * (max - min) + min; }
+function pick(arr){ return arr[Math.floor(Math.random() * arr.length)]; }
+
+function launch(){
+  // Launch from lower area up to near center/top-ish for cinematic look
+  const x = rand(W * 0.2, W * 0.8);
+  const y = H + rand(10, 80);
+  const targetY = rand(H * 0.18, H * 0.45);
+
+  const hue = pick(palette);
+
+  sparks.push({
+    x, y,
+    vx: rand(-0.6, 0.6),
+    vy: rand(-9.5, -12.5),
+    ay: 0.12,
+    drag: 0.99,
+    color: hue,
+    targetY,
+    exploded: false
+  });
+}
+
+function explode(x, y){
+  const baseColor = pick(palette);
+  const count = Math.floor(rand(55, 95)); // subtle but satisfying
+
+  for(let i=0; i<count; i++){
+    const a = rand(0, Math.PI * 2);
+    const sp = rand(1.6, 4.8);
+    particles.push({
+      x, y,
+      vx: Math.cos(a) * sp,
+      vy: Math.sin(a) * sp,
+      ay: 0.06,
+      drag: 0.985,
+      life: rand(55, 95),
+      size: rand(1.0, 2.2),
+      color: baseColor,
+      twinkle: Math.random() < 0.35
+    });
+  }
+}
+
+function drawGlowDot(x, y, r, color, alphaBoost=1){
+  ctx.globalAlpha = alphaBoost;
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.globalAlpha = 1;
+}
+
+function tick(){
+  if(!running) return;
+
+  // Fade the whole canvas slightly for trails
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = "rgba(0,0,0,0.08)";
+  ctx.fillRect(0, 0, W, H);
+
+  // Launch new fireworks periodically (but not too many)
+  if (performance.now() < stopAt) {
+    if (Math.random() < 0.065) launch();
+  }
+
+  // Update sparks (rockets)
+  for(let i=sparks.length-1; i>=0; i--){
+    const s = sparks[i];
+    s.vx *= s.drag;
+    s.vy *= s.drag;
+    s.vy += s.ay;
+    s.x += s.vx;
+    s.y += s.vy;
+
+    // draw rocket head + trail
+    ctx.save();
+    ctx.globalCompositeOperation = "lighter";
+    drawGlowDot(s.x, s.y, 2.0, s.color, 0.9);
+    ctx.strokeStyle = s.color;
+    ctx.globalAlpha = 0.35;
+    ctx.beginPath();
+    ctx.moveTo(s.x, s.y);
+    ctx.lineTo(s.x - s.vx * 3.5, s.y - s.vy * 3.5);
+    ctx.stroke();
+    ctx.restore();
+
+    if(!s.exploded && s.y <= s.targetY){
+      s.exploded = true;
+      explode(s.x, s.y);
+      sparks.splice(i, 1);
+      continue;
+    }
+
+    // If goes off screen, remove
+    if(s.y < -50 || s.x < -50 || s.x > W+50){
+      sparks.splice(i, 1);
+    }
+  }
+
+  // Update particles (explosion)
+  for(let i=particles.length-1; i>=0; i--){
+    const p = particles[i];
+    p.vx *= p.drag;
+    p.vy *= p.drag;
+    p.vy += p.ay;
+
+    p.x += p.vx;
+    p.y += p.vy;
+    p.life -= 1;
+
+    const fade = Math.max(0, Math.min(1, p.life / 95));
+    ctx.save();
+    ctx.globalCompositeOperation = "lighter";
+
+    // twinkle effect
+    let alpha = 0.85 * fade;
+    if(p.twinkle && Math.random() < 0.25) alpha *= 0.35;
+
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = p.color;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+
+    if(p.life <= 0 || p.y > H + 80 || p.x < -80 || p.x > W + 80){
+      particles.splice(i, 1);
+    }
+  }
+
+  // Auto-stop once time is up and particles are gone
+  if (performance.now() >= stopAt && particles.length === 0 && sparks.length === 0) {
+    running = false;
+    ctx.clearRect(0, 0, W, H);
+    return;
+  }
+
+  requestAnimationFrame(tick);
+}
+
+function startFireworks(durationMs = 8000){
+  stopAt = performance.now() + durationMs;
+  if(!running){
+    running = true;
+    tick();
+  }
+}
+
+// OPTIONAL: click to burst fireworks where you click (nice for testing)
+// window.addEventListener("click", (e) => {
+//   explode(e.clientX, e.clientY);
+// });
 </script>
 
 </body>
