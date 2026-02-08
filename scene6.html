@@ -38,11 +38,22 @@ body{
   padding:22px;
 }
 
+/* STAGE */
 .wrap{
   width: min(900px, 94vw);
+  height: min(650px, 85vh);
+  position: relative;
+  display: grid;
+  place-items: center;
+}
+
+/* OVERLAY LAYERS */
+.layer{
+  position:absolute;
+  inset:0;
   display:grid;
-  justify-items:center;
-  gap:16px;
+  place-items:center;
+  pointer-events:none;
 }
 
 /* TEXT */
@@ -65,9 +76,20 @@ body{
   transform: translateY(-8px);
 }
 
+.message.hidden{
+  display:none;
+}
+
 /* VIDEO */
+.video-layer{
+  display:grid;
+  gap:12px;
+  place-items:center;
+  pointer-events:auto;
+}
+
 .video-card{
-  width: min(480px, 80vw); /* smaller than before */
+  width: min(480px, 80vw);
   border-radius:18px;
   overflow:hidden;
   border:1px solid var(--border);
@@ -92,7 +114,6 @@ video{
 .caption{
   font-size:14px;
   color:rgba(255,255,255,0.75);
-  margin-top:8px;
   opacity:0;
   transition: opacity 1s ease;
   text-shadow: var(--glow);
@@ -112,16 +133,25 @@ video{
 
 <div class="wrap">
 
-  <div class="message" id="msg1">Great choice !!!</div>
-  <div class="message" id="msg2">Thank youuu</div>
-
-  <div class="video-card" id="videoCard">
-    <video id="vid" controls playsinline>
-      <source src="pootie.MP4" type="video/mp4">
-    </video>
+  <!-- Message 1 -->
+  <div class="layer">
+    <div class="message" id="msg1">Great choice !!!</div>
   </div>
 
-  <div class="caption" id="caption">same person, every lifetime</div>
+  <!-- Message 2 -->
+  <div class="layer">
+    <div class="message" id="msg2">Thank youuu</div>
+  </div>
+
+  <!-- Video -->
+  <div class="layer video-layer">
+    <div class="video-card" id="videoCard">
+      <video id="vid" controls playsinline>
+        <source src="pootie.MP4" type="video/mp4">
+      </video>
+    </div>
+    <div class="caption" id="caption">same person, every lifetime</div>
+  </div>
 
 </div>
 
@@ -132,20 +162,24 @@ const videoCard = document.getElementById("videoCard");
 const caption = document.getElementById("caption");
 const vid = document.getElementById("vid");
 
-// Timeline
-// 0.5s → Great choice appears
-// 2.5s → fade out
-// 3.5s → Thank youuu appears
-// 5.5s → fade out
-// 6.5s → video + caption appear
+/*
+Timeline:
+0.5s → msg1 appears
+2.5s → msg1 fades
+3.5s → msg2 appears
+5.5s → msg2 fades
+6.5s → video + caption appear
+*/
 
 setTimeout(() => msg1.classList.add("show"), 500);
 
 setTimeout(() => msg1.classList.add("fade"), 2500);
+setTimeout(() => msg1.classList.add("hidden"), 3500);
 
 setTimeout(() => msg2.classList.add("show"), 3500);
 
 setTimeout(() => msg2.classList.add("fade"), 5500);
+setTimeout(() => msg2.classList.add("hidden"), 6500);
 
 setTimeout(() => {
   videoCard.classList.add("show");
