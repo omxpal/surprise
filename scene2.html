@@ -1,294 +1,238 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Scene 2 — We were here</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Scene 2 — We were here</title>
 
-  <style>
-    :root{
-      --bg: #07080b;
-      --card: rgba(255,255,255,0.03);
-      --border: rgba(255,255,255,0.08);
+<style>
+  :root{
+    --bg: #05060a;
+    --text: rgba(255,255,255,0.92);
+    --muted: rgba(255,255,255,0.7);
 
-      --text: rgba(255,255,255,0.92);
-      --muted: rgba(255,255,255,0.72);
+    --heart: rgba(255,105,180,0.95);
+    --line: rgba(255,190,225,0.85);
 
-      --heart: rgba(255, 105, 180, 0.95);
-      --line: rgba(255, 190, 225, 0.80);
+    --glow: 0 0 18px rgba(255,160,200,0.22);
 
-      --glow: 0 0 18px rgba(255, 160, 200, 0.22);
-      --overlayTop: rgba(0,0,0,0.30);
-      --overlayBottom: rgba(0,0,0,0.65);
+    --btn-bg: rgba(255,255,255,0.18);
+    --btn-bg-hover: rgba(255,255,255,0.28);
+  }
 
-      --btn-bg: rgba(255, 255, 255, 0.18);
-      --btn-bg-hover: rgba(255, 255, 255, 0.28);
-    }
+  *{ box-sizing:border-box; }
 
-    * { box-sizing: border-box; }
+  body{
+    margin:0;
+    height:100vh;
+    overflow:hidden;
+    background:var(--bg);
+    font-family:system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    color:var(--text);
+  }
 
-    body{
-      margin: 0;
-      height: 100vh;
-      overflow: hidden;
-      background: var(--bg);
-      color: var(--text);
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-    }
+  .scene{
+    display:flex;
+    height:100vh;
+    width:100vw;
+  }
 
-    .overlay{
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      background: linear-gradient(to bottom, var(--overlayTop), var(--overlayBottom));
-    }
+  /* LEFT PANEL */
+  .left{
+    width:50%;
+    background:black;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:60px;
+  }
 
-    .scene{
-      height: 100vh;
-      width: 100vw;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 22px;
-    }
+  .text{
+    max-width:500px;
+    text-shadow:var(--glow);
+  }
 
-    .wrap{
-      width: min(1020px, 94vw);
-      display: grid;
-      grid-template-rows: 1fr auto auto;
-      gap: 16px;
-    }
+  .line{
+    opacity:0;
+    transform:translateY(6px);
+    transition:opacity 1s ease, transform 1s ease;
+    font-weight:300;
+    font-size:clamp(22px,2.5vw,32px);
+    margin:16px 0;
+  }
 
-    .map-card{
-      position: relative;
-      width: 100%;
-      aspect-ratio: 16 / 9;
-      border-radius: 18px;
-      overflow: hidden;
-      background: var(--card);
-      border: 1px solid var(--border);
-      box-shadow: 0 12px 40px rgba(0,0,0,0.45);
-    }
+  .line.show{
+    opacity:1;
+    transform:translateY(0);
+  }
 
-    /* Your map image */
-    .map-image{
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: contain;          /* show the whole map */
-      object-position: center;
-      background: rgba(0,0,0,0.25); /* fills empty bars if any */
-      display: block;
-      filter: contrast(1.02);
-    }
+  .continue{
+    margin-top:30px;
+    padding:10px 18px;
+    border:0;
+    border-radius:10px;
+    cursor:pointer;
+    background:var(--btn-bg);
+    color:white;
+    font-size:14px;
+    opacity:0;
+    transform:translateY(6px);
+    transition:opacity .8s ease, transform .8s ease, background .2s ease;
+  }
 
-    /* A light dark wash on top to keep indie mood + readable pins */
-    .map-wash{
-      position: absolute;
-      inset: 0;
-      background: radial-gradient(900px 500px at 30% 25%, rgba(255,255,255,0.05), transparent 55%),
-                  radial-gradient(900px 500px at 80% 70%, rgba(255,105,180,0.04), transparent 60%),
-                  rgba(0,0,0,0.15);
-      pointer-events: none;
-    }
+  .continue.show{
+    opacity:1;
+    transform:translateY(0);
+  }
 
-    /* Route layer */
-    .lines{
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-    }
+  .continue:hover{
+    background:var(--btn-bg-hover);
+  }
 
-    .route{
-      fill: none;
-      stroke: var(--line);
-      stroke-width: 2.4;
-      stroke-linecap: round;
-      stroke-dasharray: 2 10;   /* dotted */
-      opacity: 0;
-      filter: drop-shadow(0 0 10px rgba(255, 160, 200, 0.18));
-    }
+  /* RIGHT MAP SIDE */
+  .right{
+    width:50%;
+    position:relative;
+    overflow:hidden;
+    background:black;
+  }
 
-    .route.show{
-      opacity: 1;
-      animation: draw 2.4s ease forwards;
-    }
+  .map-image{
+    position:absolute;
+    top:0;
+    right:0;                 /* anchor to right */
+    height:100%;
+    width:auto;              /* keeps aspect ratio */
+    object-fit:cover;
+  }
 
-    @keyframes draw{
-      from { stroke-dashoffset: 170; }
-      to   { stroke-dashoffset: 0; }
-    }
+  /* ROUTES */
+  .lines{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    pointer-events:none;
+  }
 
-    /* Pins */
-    .pin{
-      position: absolute;
-      transform: translate(-50%, -100%) scale(0.85);
-      opacity: 0;
-      transition: opacity 0.7s ease, transform 0.7s ease;
-      filter: drop-shadow(0 10px 18px rgba(0,0,0,0.35));
-      user-select: none;
-      pointer-events: none;
-    }
+  .route{
+    fill:none;
+    stroke:var(--line);
+    stroke-width:2.5;
+    stroke-linecap:round;
+    stroke-dasharray:2 10;
+    opacity:0;
+  }
 
-    .pin.show{
-      opacity: 1;
-      transform: translate(-50%, -100%) scale(1);
-    }
+  .route.show{
+    opacity:1;
+    animation:draw 2.4s ease forwards;
+  }
 
-    .pin .heart{
-      font-size: clamp(22px, 3vw, 30px);
-      color: var(--heart);
-      text-shadow: var(--glow);
-      line-height: 1;
-    }
+  @keyframes draw{
+    from{ stroke-dashoffset:170; }
+    to{ stroke-dashoffset:0; }
+  }
 
-    .pin .label{
-      margin-top: 6px;
-      font-size: 12px;
-      color: var(--muted);
-      letter-spacing: 0.2px;
-      text-align: center;
-      white-space: nowrap;
-      opacity: 0.95;
-    }
+  /* PINS */
+  .pin{
+    position:absolute;
+    transform:translate(-50%,-100%) scale(.85);
+    opacity:0;
+    transition:opacity .7s ease, transform .7s ease;
+  }
 
-    /* Text */
-    .text{
-      text-align: center;
-      text-shadow: var(--glow);
-      padding: 0 10px 0;
-    }
+  .pin.show{
+    opacity:1;
+    transform:translate(-50%,-100%) scale(1);
+  }
 
-    .line{
-      opacity: 0;
-      transform: translateY(6px);
-      transition: opacity 1.0s ease, transform 1.0s ease;
-      font-weight: 300;
-      font-size: clamp(20px, 2.4vw, 30px);
-      margin: 8px 0;
-    }
+  .heart{
+    font-size:28px;
+    color:var(--heart);
+    text-shadow:var(--glow);
+  }
 
-    .line.show{
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    .continue{
-      justify-self: center;
-      margin-top: 6px;
-      padding: 10px 18px;
-      border: 0;
-      border-radius: 10px;
-      cursor: pointer;
-      background: var(--btn-bg);
-      color: #fff;
-      font-size: 14px;
-      letter-spacing: 0.2px;
-      opacity: 0;
-      transform: translateY(6px);
-      transition: opacity 0.8s ease, transform 0.8s ease, background 0.2s ease;
-    }
-
-    .continue.show{
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    .continue:hover{
-      background: var(--btn-bg-hover);
-    }
-  </style>
+</style>
 </head>
 
 <body>
-  <div class="overlay"></div>
 
-  <div class="scene">
-    <div class="wrap">
+<div class="scene">
 
-      <div class="map-card">
-        <!-- MAP IMAGE (from repo root) -->
-        <img class="map-image" src="sl_070722_51460_20.jpg" alt="World map" />
-        <div class="map-wash"></div>
-
-        <!-- DOTTED ROUTES (we use a 1000x560 viewBox as a stable coordinate system) -->
-        <svg class="lines" viewBox="0 0 1000 560" preserveAspectRatio="none" aria-hidden="true">
-          <!-- Thailand -> Melbourne -->
-          <path id="routeTH" class="route" d="M720,320 C780,345 820,390 845,455" />
-          <!-- Philippines -> Melbourne -->
-          <path id="routePH" class="route" d="M760,295 C810,330 835,385 845,455" />
-        </svg>
-
-        <!-- PINS (positioned as % of the card) -->
-        <div class="pin" id="pinTH" style="left: 72%; top: 58%;">
-          <div class="heart">❤</div>
-          <div class="label">Thailand</div>
-        </div>
-
-        <div class="pin" id="pinPH" style="left: 76%; top: 54%;">
-          <div class="heart">❤</div>
-          <div class="label">Philippines</div>
-        </div>
-
-        <div class="pin" id="pinAU" style="left: 84.5%; top: 82%;">
-          <div class="heart">❤</div>
-          <div class="label">Australia</div>
-        </div>
-      </div>
-
-      <div class="text" id="scene2Text">
-        <div class="line">You were in the Philippines.</div>
-        <div class="line">I was in Thailand.</div>
-        <div class="line">And somehow…</div>
-        <div class="line">We met each other in Melbourne</div>
-      </div>
-
+  <!-- LEFT TEXT SIDE -->
+  <div class="left">
+    <div class="text" id="scene2Text">
+      <div class="line">You were in the Philippines.</div>
+      <div class="line">I was in Thailand.</div>
+      <div class="line">And somehow…</div>
+      <div class="line">We met each other in Melbourne</div>
       <button class="continue" id="continueBtn">Continue</button>
-
     </div>
   </div>
 
-  <script>
-    // Timing: ~10–12s
-    const base = 600;
+  <!-- RIGHT MAP SIDE -->
+  <div class="right">
 
-    const pinTH = document.getElementById("pinTH");
-    const pinPH = document.getElementById("pinPH");
-    const pinAU = document.getElementById("pinAU");
+    <img src="sl_070722_51460_20.jpg" class="map-image" alt="World map">
 
-    const routeTH = document.getElementById("routeTH");
-    const routePH = document.getElementById("routePH");
+    <!-- SVG overlay (scaled to full right panel) -->
+    <svg class="lines" viewBox="0 0 1000 560" preserveAspectRatio="none">
+      <path id="routeTH" class="route"
+        d="M720,320 C780,345 820,390 845,455" />
+      <path id="routePH" class="route"
+        d="M760,295 C810,330 835,385 845,455" />
+    </svg>
 
-    const textLines = Array.from(document.querySelectorAll("#scene2Text .line"));
-    const btn = document.getElementById("continueBtn");
+    <!-- PINS positioned relative to right half -->
+    <div class="pin" id="pinTH" style="left:65%; top:55%;">
+      <div class="heart">❤</div>
+    </div>
 
-    // Pins appear one-by-one
-    setTimeout(() => pinTH.classList.add("show"), base + 400);
-    setTimeout(() => pinPH.classList.add("show"), base + 1400);
-    setTimeout(() => pinAU.classList.add("show"), base + 2400);
+    <div class="pin" id="pinPH" style="left:70%; top:52%;">
+      <div class="heart">❤</div>
+    </div>
 
-    // Routes animate
-    setTimeout(() => routeTH.classList.add("show"), base + 3200);
-    setTimeout(() => routePH.classList.add("show"), base + 3600);
+    <div class="pin" id="pinAU" style="left:80%; top:78%;">
+      <div class="heart">❤</div>
+    </div>
 
-    // Text sequence
-    const textBase = base + 4300;
-    const textDelays = [0, 1600, 3200, 4800];
+  </div>
+</div>
 
-    textLines.forEach((el, i) => {
-      setTimeout(() => el.classList.add("show"), textBase + textDelays[i]);
-    });
+<script>
+  const base = 600;
 
-    // Button appears near the end
-    setTimeout(() => btn.classList.add("show"), textBase + 6200);
+  const pinTH = document.getElementById("pinTH");
+  const pinPH = document.getElementById("pinPH");
+  const pinAU = document.getElementById("pinAU");
 
-    // Next page (change to your real filename when ready)
-    btn.addEventListener("click", () => {
-      window.location.href = "scene3.html";
-    });
-  </script>
+  const routeTH = document.getElementById("routeTH");
+  const routePH = document.getElementById("routePH");
+
+  const lines = Array.from(document.querySelectorAll(".line"));
+  const btn = document.getElementById("continueBtn");
+
+  setTimeout(()=>pinTH.classList.add("show"), base+400);
+  setTimeout(()=>pinPH.classList.add("show"), base+1400);
+  setTimeout(()=>pinAU.classList.add("show"), base+2400);
+
+  setTimeout(()=>routeTH.classList.add("show"), base+3200);
+  setTimeout(()=>routePH.classList.add("show"), base+3600);
+
+  const textBase = base+4300;
+  const textDelays=[0,1600,3200,4800];
+
+  lines.forEach((el,i)=>{
+    setTimeout(()=>el.classList.add("show"), textBase+textDelays[i]);
+  });
+
+  setTimeout(()=>btn.classList.add("show"), textBase+6200);
+
+  btn.addEventListener("click", ()=>{
+    window.location.href="scene3.html";
+  });
+</script>
+
 </body>
 </html>
