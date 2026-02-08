@@ -213,26 +213,51 @@
   const lines = Array.from(document.querySelectorAll(".line"));
   const btn = document.getElementById("continueBtn");
 
-  setTimeout(()=>pinTH.classList.add("show"), base+400);
-  setTimeout(()=>pinPH.classList.add("show"), base+1400);
-  setTimeout(()=>pinAU.classList.add("show"), base+2400);
+  // Timeline (Philippines first)
+  const tPH = base + 400;
+  const tTH = base + 1400;
+  const tAU = base + 2400;
+  const tRoutes = base + 3200;
+  const tFinalLine = base + 4200;
+  const tBtn = base + 5600;
 
-  setTimeout(()=>routeTH.classList.add("show"), base+3200);
-  setTimeout(()=>routePH.classList.add("show"), base+3600);
+  // Pin + matching line appear together
+  setTimeout(() => {
+    pinPH.classList.add("show");
+    lines[0].classList.add("show"); // "You were in the Philippines."
+  }, tPH);
 
-  const textBase = base+4300;
-  const textDelays=[0,1600,3200,4800];
+  setTimeout(() => {
+    pinTH.classList.add("show");
+    lines[1].classList.add("show"); // "I was in Thailand."
+  }, tTH);
 
-  lines.forEach((el,i)=>{
-    setTimeout(()=>el.classList.add("show"), textBase+textDelays[i]);
-  });
+  setTimeout(() => {
+    pinAU.classList.add("show");
+    lines[2].classList.add("show"); // "And somehow…"
+  }, tAU);
 
-  setTimeout(()=>btn.classList.add("show"), textBase+6200);
+  // Routes animate after pins are up
+  setTimeout(() => {
+    routePH.classList.add("show");
+    routeTH.classList.add("show");
+  }, tRoutes);
 
-  btn.addEventListener("click", ()=>{
-    window.location.href="scene3.html";
+  // Final line after routes begin
+  setTimeout(() => {
+    lines[3].classList.add("show"); // "We met each other in Melbourne"
+  }, tFinalLine);
+
+  // Button appears near the end
+  setTimeout(() => {
+    btn.classList.add("show");
+  }, tBtn);
+
+  btn.addEventListener("click", () => {
+    window.location.href = "scene3.html";
   });
 </script>
+
 
 </body>
 </html>
