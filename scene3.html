@@ -1,1 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scene 3 — Time</title>
+
+  <style>
+    :root{
+      --bg: #05060a;
+      --text: rgba(255,255,255,0.92);
+      --muted: rgba(255,255,255,0.70);
+      --glow: 0 0 18px rgba(255, 160, 200, 0.18);
+      --accent: rgba(255,105,180,0.95);
+
+      --panel: rgba(255,255,255,0.04);
+      --border: rgba(255,255,255,0.08);
+
+      --btn-bg: rgba(255,255,255,0.18);
+      --btn-bg-hover: rgba(255,255,255,0.28);
+    }
+
+    * { box-sizing: border-box; }
+
+    body{
+      margin: 0;
+      height: 100vh;
+      overflow: hidden;
+      background: var(--bg);
+      color: var(--text);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    }
+
+    .scene{
+      height: 100vh;
+      width: 100vw;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 22px;
+    }
+
+    .wrap{
+      width: min(980px, 94vw);
+      display: grid;
+      grid-template-rows: auto auto;
+      gap: 18px;
+      justify-items: center;
+    }
+
+    .counter-card{
+      width: 100%;
+      border-radius: 18px;
+      border: 1px solid var(--border);
+      background:
+        radial-gradient(900px 500px at 25% 30%, rgba(255,255,255,0.06), transparent 60%),
+        radial-gradient(900px 500px at 80% 70%, rgba(255,105,180,0.05), transparent 60%),
+        var(--panel);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.45);
+      padding: 28px 22px;
+      display: grid;
+      gap: 12px;
+      justify-items: center;
+      text-align: center;
+    }
+
+    .label{
+      font-size: 12px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.45);
+    }
+
+    .counter{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: clamp(54px, 9vw, 120px);
+      font-weight: 700;
+      line-height: 1;
+      letter-spacing: 0.06em;
+      color: rgba(255,255,255,0.95);
+      text-shadow: var(--glow);
+    }
+
+    .counter .unit{
+      font-size: clamp(16px, 2.2vw, 22px);
+      font-weight: 500;
+      letter-spacing: 0.18em;
+      color: rgba(255,255,255,0.55);
+      margin-left: 10px;
+      vertical-align: 18%;
+    }
+
+    .sub{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 13px;
+      color: rgba(255,255,255,0.45);
+      letter-spacing: 0.08em;
+    }
+
+    .text{
+      width: min(860px, 92vw);
+      text-align: center;
+      text-shadow: var(--glow);
+      padding: 0 10px;
+    }
+
+    .line{
+      opacity: 0;
+      transform: translateY(6px);
+      transition: opacity 1s ease, transform 1s ease;
+      font-weight: 300;
+      font-size: clamp(20px, 2.4vw, 30px);
+      margin: 10px 0;
+    }
+
+    .line.show{
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .emph{
+      color: rgba(255,255,255,0.98);
+    }
+
+    .pink{
+      color: var(--accent);
+      font-weight: 400;
+    }
+
+    .continue{
+      margin-top: 12px;
+      padding: 10px 18px;
+      border: 0;
+      border-radius: 10px;
+      cursor: pointer;
+      background: var(--btn-bg);
+      color: #fff;
+      font-size: 14px;
+      letter-spacing: 0.2px;
+      opacity: 0;
+      transform: translateY(6px);
+      transition: opacity .8s ease, transform .8s ease, background .2s ease;
+    }
+
+    .continue.show{
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .continue:hover{
+      background: var(--btn-bg-hover);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="scene">
+    <div class="wrap">
+
+      <div class="counter-card">
+        <div class="label">days together</div>
+
+        <div class="counter" aria-live="polite">
+          <span id="daysValue">0000</span><span class="unit">DAYS</span>
+        </div>
+
+        <div class="sub" id="sinceText">since 2023-02-21</div>
+      </div>
+
+      <div class="text" id="scene3Text">
+        <div class="line">Since February 21, 2023…</div>
+        <div class="line">we’ve shared <span class="pink" id="daysInline">0</span> days.</div>
+        <div class="line">And I’m not done.</div>
+        <div class="line"><span class="emph">Give me</span> <span class="pink">1000 more...</span></div>
+        <div class="line">then <span class="pink">10,000</span> after that.</div>
+
+        <!-- optional: wire this later -->
+        <button class="continue" id="continueBtn">Continue</button>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    // ---------- CONFIG ----------
+    // NOTE: months are 0-indexed in JS Dates (0=Jan, 1=Feb, ...)
+    const START_DATE = new Date(2023, 1, 21); // Feb 21, 2023 (local time)
+    const NEXT_PAGE = "scene4.html";          // change when you create scene 4
+
+    // ---------- HELPERS ----------
+    function daysBetween(a, b) {
+      // Use noon to reduce DST edge-case weirdness
+      const aa = new Date(a.getFullYear(), a.getMonth(), a.getDate(), 12, 0, 0);
+      const bb = new Date(b.getFullYear(), b.getMonth(), b.getDate(), 12, 0, 0);
+      const ms = bb - aa;
+      return Math.max(0, Math.floor(ms / (1000 * 60 * 60 * 24)));
+    }
+
+    function pad4(n) {
+      const s = String(Math.max(0, Math.floor(n)));
+      return s.length >= 4 ? s : ("0000" + s).slice(-4);
+    }
+
+    // ---------- COMPUTE DAYS ----------
+    const today = new Date();
+    const totalDays = daysBetween(START_DATE, today);
+
+    // ---------- DOM ----------
+    const daysValue = document.getElementById("daysValue");
+    const daysInline = document.getElementById("daysInline");
+    const sinceText = document.getElementById("sinceText");
+    const lines = Array.from(document.querySelectorAll("#scene3Text .line"));
+    const btn = document.getElementById("continueBtn");
+
+    // ---------- COUNTER ANIMATION ----------
+    // Feel: numbers tick up quickly, then settle.
+    // We'll animate in two phases:
+    // 1) Fast ramp to ~92% in ~1.8s
+    // 2) Ease into final value in ~1.7s
+    function animateCounter(finalValue) {
+      const startDelay = 700; // slight pause after load
+      const phase1Ms = 1800;
+      const phase2Ms = 1700;
+
+      const phase1Target = Math.floor(finalValue * 0.92);
+
+      function setValue(v) {
+        daysValue.textContent = pad4(v);
+        daysInline.textContent = String(v);
+      }
+
+      setValue(0);
+
+      setTimeout(() => {
+        const t0 = performance.now();
+
+        function phase1(now) {
+          const t = Math.min(1, (now - t0) / phase1Ms);
+          // Ease-out-ish
+          const eased = 1 - Math.pow(1 - t, 3);
+          const v = Math.floor(eased * phase1Target);
+          setValue(v);
+
+          if (t < 1) {
+            requestAnimationFrame(phase1);
+          } else {
+            const t1 = performance.now();
+            requestAnimationFrame(function phase2(now2) {
+              const t2 = Math.min(1, (now2 - t1) / phase2Ms);
+              // Smooth settle
+              const eased2 = 1 - Math.pow(1 - t2, 4);
+              const v2 = phase1Target + Math.floor(eased2 * (finalValue - phase1Target));
+              setValue(v2);
+
+              if (t2 < 1) requestAnimationFrame(phase2);
+            });
+          }
+        }
+
+        requestAnimationFrame(phase1);
+      }, startDelay);
+    }
+
+    // Set the "since" line (nice and explicit)
+    const yyyy = START_DATE.getFullYear();
+    const mm = String(START_DATE.getMonth() + 1).padStart(2, "0");
+    const dd = String(START_DATE.getDate()).padStart(2, "0");
+    sinceText.textContent = `since ${yyyy}-${mm}-${dd}`;
+
+    animateCounter(totalDays);
+
+    // ---------- TEXT TIMING (10–12s feel) ----------
+    // Show after a small delay so the counter starts first.
+    const base = 1600;
+    const delays = [0, 1800, 3600, 5400, 7200];
+
+    lines.forEach((el, i) => {
+      setTimeout(() => el.classList.add("show"), base + delays[i]);
+    });
+
+    // Button near end
+    setTimeout(() => btn.classList.add("show"), base + 8600);
+
+    btn.addEventListener("click", () => {
+      window.location.href = NEXT_PAGE;
+    });
+  </script>
+</body>
+</html>
 
